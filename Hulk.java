@@ -18,7 +18,7 @@ public class Hulk{
 		 String peerFiles = "";
 		 
 		 Stack<String> missingFilesList = new Stack<String>();
-		 List<String> allFilesList = new ArrayList<String>();
+		 List<String> myFilesList = new ArrayList<String>();
 		 List<String> peerFileList =  new ArrayList<String>();
 		
 		 
@@ -35,7 +35,7 @@ public class Hulk{
 		 } 
 		 
 		 while (true) {
-			 if (hulk.getInputStream().ready()) {
+			 if (hulk.getInputStream().ready()) { //Being server
 				 String input = hulk.getInputStream().readLine();
 				 if (input.equals("L")) {
 					 hulk.sendFileList();
@@ -44,11 +44,11 @@ public class Hulk{
 					 hulk.sendFile(fileName);
 				 }
 			 }else{
-				 if(peerFiles != null){
+				 if(peerFiles == null){ //Being client
 					 peerFiles = hulk.requestFileList();
 					 peerFileList = convertToList(peerFiles);
-					 allFilesList = getAllFiles();
-					 missingFilesList = getMissingFiles(allFilesList, peerFileList);
+					 myFilesList = getMyFiles();
+					 missingFilesList = getMissingFiles(myFilesList, peerFileList);
 				 }else{
 					 if(!missingFilesList.isEmpty()){
 						 String fetchFile = missingFilesList.pop();
@@ -66,7 +66,7 @@ public class Hulk{
 		return list;
 	}
 	
-	static List<String> getAllFiles() {
+	static List<String> getMyFiles() {
 		List<String> allFilesList = new ArrayList<String>();
 		return allFilesList;
 	}
@@ -75,8 +75,5 @@ public class Hulk{
 		Stack<String> missingFiles = new Stack<String>();
 		return missingFiles;
 	}
-	
-	void start(Peer p) {
-		
-	}
+
 }

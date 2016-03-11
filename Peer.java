@@ -27,10 +27,19 @@ class Peer {
 		return outToClient;
 	}
 
-
-
-	void sendFileList() {
-		
+	void sendFileList(){
+		File dir = new File(SHARED_FILE_PATH);
+		StringBuffer allFileNames = new StringBuffer();
+		if (dir.exists()) {
+			for (final File fileEntry : dir.listFiles()) {
+				allFileNames.append(fileEntry.getName());
+			}			
+		}
+		try {
+			outToClient.writeBytes(allFileNames.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	void sendFile(String fileName) {
