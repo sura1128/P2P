@@ -1,16 +1,15 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-class Hulk {
+class Peer {
 
-	private static String IP_ADDRESS = "1234567612621";
-	private final static String SHARED_FILE_PATH = Paths.get(".").toAbsolutePath().normalize().toString()
-			+ File.separator + "src" + File.separator + "Hulk_Shared_Files";
+	private String IP_ADDRESS = "1234567612621";
+	private String SHARED_FILE_PATH = Peer.class.getProtectionDomain().getCodeSource().getLocation().getPath() + 
+			File.separator + "Hulk_Shared_Files"+ File.separator;
 
-	public static void connectToClient() throws Exception {
+	public void connectToClient() throws Exception {
 
 		String fileNames = "";
 		String command = "";
@@ -24,13 +23,8 @@ class Hulk {
 		while (true) {
 			command = inFromClient.readLine();
 			
-			if (command == "START SYNC") { //RECEIVE START FROM CLIENT
-				
-				outToClient.writeBytes("SEND FILE NAMES"); //ASK FOR FILE NAMES
-				fileNames = inFromClient.readLine();
-				
-				if (haveSameFiles(fileNames) == false) { //COMPARE AND SYNC
-					missingFiles = synchronize(fileNames);
+			if (command == "START SYNC") { //RECEIVE START FROM CLIENT		
+					missingFiles = getFiles(); //SEND FILES OVER
 					for (int i = 0; i < missingFiles.size(); i++) {
 						byte[] bytes = new byte[16 * 1024];
 						InputStream in = new FileInputStream(missingFiles.get(i));
@@ -40,7 +34,6 @@ class Hulk {
 						}
 						in.close();
 					}
-				}
 			} else {
 				if (command == "STOP SYNC") { //RECEIVE STOP
 					welcomeSocket.close();
@@ -50,25 +43,22 @@ class Hulk {
 
 		}
 	}
-	// Helper Files
-	private static boolean haveSameFiles(String filenames) { //Check if client and server have same files
-		return false;
-	}
-
-	private static List<File> synchronize(String fileNames) { //Send back a list of files to send to client
-		String filePath = new File(".").getAbsolutePath();
-		System.out.println(filePath);
-
-		List<File> missingFiles = new ArrayList<File>(); // THIS IS A STUB THIS IS A STUB!!!!
-		File test = new File(filePath + "test.txt"); // SO IS THIS!!
-
+	
+	private List<File> getFiles() {
+		File dir = new File(SHARED_FILE_PATH);
+		List<File> missingFiles = new ArrayList<File>();
+		if (dir.exists()) {
+			for (final File fileEntry : dir.listFiles()) {
+				missingFiles.add(fileEntry);
+			}
+			
+		}
 		return missingFiles;
 	}
 
-	private static void connectToServer(String IP) throws UnknownHostException, IOException {
-		Socket clientSocket = new Socket(IP, 6789);
-		StringBuffer fileNames = new StringBuffer();
 
+	private void connectToServer(String IP) throws UnknownHostException, IOException {
+		Socket clientSocket = new Socket(IP, 6789);
 		String command = "";
 
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -77,21 +67,15 @@ class Hulk {
 		outToServer.writeBytes("START SYNC" + '\n'); // SEND START COMMAND
 		command = inFromServer.readLine();
 		
-		if (command.equals("SEND FILE NAMES")) { //GETTING FILE NAMES
-			File dir = new File("Hulk_Shared_Files");
-			if (dir.exists()) {
-				for (final File fileEntry : dir.listFiles()) {
-			        if (fileEntry.isDirectory()) {
-			        	fileNames.append(fileEntry.getName()+",");
-			        }
-			    }
-			}
-			String temp = fileNames.toString(); // SENDING FILES TO SERVER
-			outToServer.writeBytes(temp);
-		}
+		//Read files from server
+		compareFiles();
+	}
+	
+	private void compareFiles() {
+		
 	}
 
-	public static void main(String argv[]) throws Exception {
+	public void main(String argv[]) throws Exception {
 				
 		
 		 BufferedReader inFromUser = new BufferedReader(new
