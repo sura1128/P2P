@@ -5,11 +5,14 @@ import java.util.List;
 
 class Peer {
 
-	private String IP_ADDRESS = "1234567612621";
-	private String SHARED_FILE_PATH = Peer.class.getProtectionDomain().getCodeSource().getLocation().getPath() + 
-			File.separator + "Hulk_Shared_Files"+ File.separator;
+	private String SHARED_FILE_PATH;
+	
+	Peer(String sharedFilePath) {
+		SHARED_FILE_PATH = sharedFilePath;
+		
+	}
 
-	public void connectToClient() throws Exception {
+	void connectToClient() throws Exception {
 
 		String fileNames = "";
 		String command = "";
@@ -44,20 +47,19 @@ class Peer {
 		}
 	}
 	
-	private List<File> getFiles() {
+	List<File> getFiles() {
 		File dir = new File(SHARED_FILE_PATH);
 		List<File> missingFiles = new ArrayList<File>();
 		if (dir.exists()) {
 			for (final File fileEntry : dir.listFiles()) {
 				missingFiles.add(fileEntry);
-			}
-			
+			}			
 		}
 		return missingFiles;
 	}
 
 
-	private void connectToServer(String IP) throws UnknownHostException, IOException {
+	void connectToServer(String IP) throws UnknownHostException, IOException {
 		Socket clientSocket = new Socket(IP, 6789);
 		String command = "";
 
@@ -71,40 +73,9 @@ class Peer {
 		compareFiles();
 	}
 	
-	private void compareFiles() {
+	void compareFiles() {
 		
 	}
 
-	public void main(String argv[]) throws Exception {
-				
-		
-		 BufferedReader inFromUser = new BufferedReader(new
-		 InputStreamReader(System.in));
-		 int command = 0;
-		 System.out.println("Choose one of the given options: ");
-		 System.out.println("1. SYNC TO CLIENT");
-		 System.out.println("2. SYNC FROM SERVER");
-		 System.out.println("3. EXIT");
-		
-		 while (true) {
-		 command = Integer.parseInt(inFromUser.readLine());
-		 if (command == 3) {
-		 break;
-		 }
-		 switch (command) {
-		 case 1: //Allow clients to sync
-		 System.out.println("Connecting to other peers ...");
-		 connectToClient();
-		 break;
-		
-		 case 2: //Sync from other clients
-		 System.out.println("ENTER IP ADDRESS: ");
-		 String IP = inFromUser.readLine();
-		 connectToServer(IP);
-		 break;
-		 }
-		
-		 }
 
-	}
 }
