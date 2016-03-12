@@ -43,17 +43,75 @@ class Peer {
 	}
 	
 	void sendFile(String fileName) {
-		
+		InputStream in = null;
+		OutputStream out = null;
+		File file = new File("\\" + fileName);
+		// Get the size of the file
+		long length = file.length();
+		byte[] bytes = new byte[16 * 1024];
+		int count;
+		try {
+			in = new FileInputStream(file);
+		} catch (FileNotFoundException ex) {
+			System.out.println("File not found. ");
+		}
+		try {
+			out = mySocket.getOutputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			while ((count = in.read(bytes)) > 0) {
+				out.write(bytes, 0, count);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	String requestFileList() {
-		return "";
+		String fileList = "";
+		try {
+			outToClient.writeBytes("L");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			fileList = inFromClient.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fileList;
 	}
 	
 	void requestFile(String fileName) {
-		
+		OutputStream out = null;
+		InputStream in = null;
+		try {
+			outToClient.writeBytes("F" + fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			out = new FileOutputStream("\\" + fileName);
+		} catch (FileNotFoundException ex) {
+			System.out.println("File not found. ");
+		}
+		try {
+			in = mySocket.getInputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		byte[] bytes = new byte[100*1024];
+		int count;
+		try {
+			while ((count = in.read(bytes)) > 0) {
+			out.write(bytes, 0, count);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
-
-	
-
 }
