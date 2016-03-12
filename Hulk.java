@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,64 +14,70 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 public class Hulk{
-	 final static boolean HAS_IP = false;
+	 static boolean HAS_IP = false;
 	 static String IP_ADDRESS;
-	 final static int port = 0;
+	 final static int port = 6789;
 	 final static String SHARED_FILE_PATH = Hulk.class.getProtectionDomain().getCodeSource().getLocation().getPath() + 
 				File.separator + "Hulk_Shared_Files"+ File.separator;
 	 
 	 
 	public static void main(String argv[]) throws Exception {
 		
-		 Peer hulk;
-		 String peerFiles = "";
+		
+		 String peerFiles = null;
 		 
 		 Stack<String> missingFilesList = new Stack<String>();
 		 List<String> myFilesList = new ArrayList<String>();
 		 List<String> peerFileList =  new ArrayList<String>();
+		 int peerFileLength = 0;
 		 
 		 //IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
-		
 		 
-		 if (HAS_IP == false) {
-			 ServerSocket welcomeSocket = new ServerSocket(6789);
-			 Socket outgoingSocket = welcomeSocket.accept();
-			 hulk = new Peer(SHARED_FILE_PATH, outgoingSocket);
-			 System.out.println("Established connection.");			 
-		 }else {
-			 //obtain IP somehow
-			 Socket hulkSocket = new Socket(IP_ADDRESS, port);
-			 hulk = new Peer(SHARED_FILE_PATH, hulkSocket);
-			 
-		 } 
-		 
-		 while (true) {
-			 if (hulk.getInputStream().ready()) { //Being server
-				 String input = hulk.getInputStream().readLine();
-				 if (input.equals("L")) {
-					 hulk.sendFileList();
-				 } else if (input.charAt(0) == 'F') {
-					 String fileName = input.substring(1);
-					 hulk.sendFile(fileName);
-				 }
-			 }else{
-				 if(peerFiles == null){ //Being client
-					 peerFiles = hulk.requestFileList();
-					 peerFileList = convertToList(peerFiles);
-					 myFilesList = getMyFiles();
-					 missingFilesList = getMissingFiles(myFilesList, peerFileList);
-				 }else{
-					 if(!missingFilesList.isEmpty()){
-						 String fetchFile = missingFilesList.pop();
-						 hulk.requestFile(fetchFile);
-					 }
-				 }
-			 }
+		 BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+		 System.out.println("Which Peer do you want to connect to? ");
+		 String peer = input.readLine();
+
+
+		 System.out.println("Wait or connect? ");
+		 String ans = input.readLine();
+
+		 if (ans.equalsIgnoreCase("wait")) {
+			ServerSocket welcomeSocket = new ServerSocket(6789);
+		 	send(welcomeSocket);
+		 	receiveAfter();
+		 } else {
+		 	IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
+		 	Socket mySocket = new Socket(IP_ADDRESS,6789);
+		 	Peer hulk = new Peer(SHARED_FILE_PATH, mySocket);
+		 	receive();
+		 	sendAfter();
 		 }
-		 
+
+
+		
+	}
+
+	static void send(ServerSocket welcomeSocket) throws IOException {
+		while(true) {
+			Socket connectSocket = welcomeSocket.accept();
+		 	Peer hulk = new Peer(SHARED_FILE_PATH, connectSocket);
+		}
+		
+	}
+
+
+	static void sendAfter() {
 
 	}
-	
+
+	static void receiveAfter() {
+
+	}
+
+	static void receive() {
+
+	}
+
 	static List<String> convertToList(String filenames) {
 		List<String> list = new ArrayList<String>();
 		String fileNames[] = filenames.split(",");
@@ -93,7 +103,8 @@ public class Hulk{
 		Stack<String> missingFiles = new Stack<String>();
 		for(int i=0; i<peerFileList.size(); i++) {
 			missingFiles.push(peerFileList.get(i));
-		}		
+		}
+		System.out.println("Missing files " + missingFiles.size());
 		return missingFiles;
 	}
 
