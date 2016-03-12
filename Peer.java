@@ -32,7 +32,7 @@ class Peer {
 		StringBuffer allFileNames = new StringBuffer();
 		if (dir.exists()) {
 			for (final File fileEntry : dir.listFiles()) {
-				allFileNames.append(fileEntry.getName());
+				allFileNames.append(fileEntry.getName()+",");				
 			}			
 		}
 		try {
