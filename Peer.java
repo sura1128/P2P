@@ -31,14 +31,13 @@ class Peer {
 		System.out.println("Sending file list...");
 		File dir = new File(SHARED_FILE_PATH);
 		StringBuffer allFileNames = new StringBuffer();
-		if (dir.exists()) {
-			
+		if (dir.exists()) {			
 			for (final File fileEntry : dir.listFiles()) {
-				allFileNames.append(fileEntry.getName()+",");				
+				allFileNames.append(fileEntry.getName()+",");
 			}			
 		}
 		try {
-			outToClient.writeBytes(allFileNames.toString());
+			outToClient.writeBytes(allFileNames.toString()+"\n");
 			System.out.println("Sent file names " + allFileNames);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -76,7 +75,7 @@ class Peer {
 	String requestFileList() {
 		String fileList = "";
 		try {
-			outToClient.writeBytes("L"); //no problem?
+			outToClient.writeBytes("L\n"); //no problem?
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -92,7 +91,7 @@ class Peer {
 		OutputStream out = null;
 		InputStream in = null;
 		try {
-			outToClient.writeBytes("F" + fileName);
+			outToClient.writeBytes("F" + fileName+"\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -121,7 +120,7 @@ class Peer {
 	
 	void terminateSync() {
 		try {
-			outToClient.writeBytes("D");
+			outToClient.writeBytes("D\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
