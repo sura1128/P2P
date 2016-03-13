@@ -108,6 +108,8 @@ public class Hulk {
 				System.out.println("Established connection");
 			}
 			String input = hulk.getInputStream().readLine(); //getting stuck here again
+			System.out.println("input = " + input);
+			
 			System.out.print("Sending ??");
 			 if (input.equals("L")) {
 				 hulk.sendFileList();

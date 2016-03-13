@@ -53,7 +53,8 @@ class Peer {
 	void sendFile(String fileName) {
 		InputStream in = null;
 		OutputStream out = null;
-		File file = new File("\\" + fileName);
+		File file = new File(SHARED_FILE_PATH + fileName);
+		System.out.println("Sending ..." + fileName);
 		// Get the size of the file
 		long length = file.length();
 		byte[] bytes = new byte[16 * 1024];
@@ -104,10 +105,12 @@ class Peer {
 	}
 	
 	void requestFile(String fileName) {
+		System.out.println("Called by Thor????");
 		OutputStream out = null;
 		InputStream in = null;
 		try {
 			outToClient.writeBytes("F" + fileName+"\n");
+			System.out.println("Able to write???");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -118,6 +121,7 @@ class Peer {
 		}
 		try {
 			in = mySocket.getInputStream();
+			System.out.println("Able to read???" + in.read());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
