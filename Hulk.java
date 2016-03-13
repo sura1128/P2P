@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -76,7 +77,7 @@ public class Hulk {
 		}
 
 	}
-	static void receive() {
+	static void receive() throws UnknownHostException, IOException {
 		 System.out.println("Request - Hulk");
 		 peerFiles = hulk.requestFileList();
 		 peerFileList = convertToList(peerFiles);
@@ -87,6 +88,10 @@ public class Hulk {
 		 while(true) {
 			 if(!missingFilesList.isEmpty()){
 				 String fetchFile = missingFilesList.pop();
+				 
+				 receiverSocket = new Socket(IP_ADDRESS, 6789);
+				 hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
+					
 				 hulk.requestFile(fetchFile);
 				 if (peerFileLength == myFilesList.size()) {
 					 System.out.println("Ending");
