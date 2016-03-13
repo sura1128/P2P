@@ -57,7 +57,6 @@ public class Hulk {
 				serverSocket = new ServerSocket(6789);
 				serverSocket.setSoTimeout(10000);
 				isSender = true;
-				send(isSender);
 				try {					
 					isSender = true;
 					send(isSender);
