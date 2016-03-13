@@ -48,7 +48,7 @@ public class Hulk {
 				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
 				isSender = false;
 				receive();
-				send(serverSocket, isSender);
+				send(isSender);
 				receiverSocket.close();
 				// Listen till timeout 
 			}
@@ -56,11 +56,14 @@ public class Hulk {
 				System.out.println("I'm a server");
 				serverSocket = new ServerSocket(6789);
 				serverSocket.setSoTimeout(10000);
+				isSender = true;
+				send(isSender);
 				try {					
 					isSender = true;
-					send(serverSocket,isSender);
+					send(isSender);
 					receive();
 					senderSocket.close();
+					serverSocket.close();
 				} catch (java.io.InterruptedIOException e) {
 					System.out.println("Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
@@ -97,14 +100,14 @@ public class Hulk {
 	}
 
 
-	static void send(ServerSocket welcomeSocket, boolean isSender) throws IOException {
+	static void send(boolean isSender) throws IOException {
 		System.out.println("Send - Hulk");
 		while (true) {
 			if (isSender == true) {
-				senderSocket = welcomeSocket.accept();
+				senderSocket = serverSocket.accept();
 				hulk = new Peer(SHARED_FILE_PATH, senderSocket);
 				System.out.println("Established connection");
-			}			
+			}
 			String input = hulk.getInputStream().readLine(); //getting stuck here again
 			System.out.print("Sending ??");
 			 if (input.equals("L")) {

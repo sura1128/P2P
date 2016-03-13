@@ -48,8 +48,8 @@ public class Thor {
 				receiverSocket = new Socket(IP_ADDRESS, 6789);
 				thor = new Peer(SHARED_FILE_PATH, receiverSocket);
 				isSender = false;
-				receive();				
-				send(serverSocket, isSender);
+				receive();	
+				send(isSender);
 				receiverSocket.close();
 				// Listen till timeout 
 			}
@@ -58,9 +58,10 @@ public class Thor {
 				serverSocket.setSoTimeout(10000);
 				try {					
 					isSender = true;
-					send(serverSocket,isSender);
+					send(isSender);
 					receive();
 					senderSocket.close();
+					serverSocket.close();
 				} catch (java.io.InterruptedIOException e) {
 					System.out.println("Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
@@ -82,6 +83,8 @@ public class Thor {
 		 myFilesList = getMyFiles();
 		 missingFilesList = getMissingFiles(myFilesList, peerFileList);
 		 
+		 System.out.println(missingFilesList.size() + " " + peerFileLength);
+		 
 		 while(true) {
 			 if(!missingFilesList.isEmpty()){
 				 String fetchFile = missingFilesList.pop();
@@ -97,11 +100,11 @@ public class Thor {
 	}
 
 
-	static void send(ServerSocket welcomeSocket, boolean isSender) throws IOException {
+	static void send(boolean isSender) throws IOException {
 		 System.out.println("Send - Thor");
 		while (true) {
 			if (isSender == true) {
-				senderSocket = welcomeSocket.accept();
+				senderSocket = serverSocket.accept();
 				thor = new Peer(SHARED_FILE_PATH, senderSocket);
 			}			
 			String input = thor.getInputStream().readLine();
