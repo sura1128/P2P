@@ -26,6 +26,15 @@ class Peer {
 	DataOutputStream getDataOutputStream() {
 		return outToClient;
 	}
+	
+	void sendIP() {
+		try {
+			outToClient.writeBytes("I" + InetAddress.getLocalHost().getHostAddress()+"\n");
+			System.out.println("Sending I");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	void sendFileList(){
 		System.out.println("Sending file list...");
@@ -85,6 +94,8 @@ class Peer {
 	
 	String requestFileList() {
 		String fileList = "";
+		System.out.println("Inside request file list");
+		
 		try {
 			outToClient.writeBytes("L\n"); //no problem?
 		} catch (IOException e) {
@@ -108,6 +119,7 @@ class Peer {
 		System.out.println("Called by Thor????");
 		OutputStream out = null;
 		InputStream in = null;
+		
 		try {
 			outToClient.writeBytes("F" + fileName+"\n");
 			System.out.println("Able to write???");

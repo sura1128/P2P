@@ -19,7 +19,7 @@ public class Server {
 	static String IP_ADDRESS;
 	final static int port = 6789;
 	final static String SHARED_FILE_PATH = Server.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-			+ "../src"+ File.separator + "Hulk_Shared_Files" + File.separator;
+			+ "../src" + File.separator + "Server_Shared_Files" + File.separator;
 
 	private static List<String> peerList = new ArrayList<String>();
 	private static Peer hulk;
@@ -27,110 +27,117 @@ public class Server {
 	private static Stack<String> missingFilesList = new Stack<String>();
 	private static List<String> myFilesList = new ArrayList<String>();
 	private static List<String> peerFileList = new ArrayList<String>();
-	
+
 	private static Socket receiverSocket;
 	private static Socket senderSocket;
 	private static ServerSocket serverSocket;
-	
+
 	public static void main(String argv[]) throws Exception {
-		
+
 		String peerName = "";
 		boolean isSender = false;
 
 		// IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
 
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-		
-		
+		String client_IP = "";
+
 		while (true) {
-			if (!(peerList.isEmpty())) {
-				IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
-				receiverSocket = new Socket(IP_ADDRESS, 6789);
-				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
-				isSender = false;
-				receive();
-				send(isSender);
-				receiverSocket.close();
-				// Listen till timeout 
-			}
-			else {
+			if (peerList.isEmpty()) {
 				System.out.println("I'm a server");
 				serverSocket = new ServerSocket(6789);
 				serverSocket.setSoTimeout(10000);
-				isSender = true;
-				try {					
+				try {
 					isSender = true;
-					send(isSender);
-					receive();
-					senderSocket.close();
+					send();
 					serverSocket.close();
 				} catch (java.io.InterruptedIOException e) {
-					System.out.println("Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
+					System.out.println(
+							"Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
 					peerList.add(peerName);
-					
+
 				}
+			} else {
+				receiverSocket = new Socket(peerList.remove(0), 6789);
+				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
+				hulk.sendIP();
+				receiverSocket.close();
 				
+				receive();
+
 			}
 
-		
 		}
 
 	}
+
 	static void receive() throws UnknownHostException, IOException {
-		 System.out.println("Request - Hulk");
-		 peerFiles = hulk.requestFileList();
-		 peerFileList = convertToList(peerFiles);
-		 int peerFileLength = peerFileList.size();
-		 myFilesList = getMyFiles();
-		 missingFilesList = getMissingFiles(myFilesList, peerFileList);
-		 
-		 while(true) {
-			 if(!missingFilesList.isEmpty()){
-				 String fetchFile = missingFilesList.pop();
-				 
-				 receiverSocket = new Socket(IP_ADDRESS, 6789);
-				 hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
-					
-				 hulk.requestFile(fetchFile);
-				 if (peerFileLength == myFilesList.size()) {
-					 System.out.println("Ending");
-					 hulk.terminateSync();
-					 break;
-				 }
-			 }
-		 }
-		 
+		receiverSocket = new Socket(IP_ADDRESS, 6789);
+		hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
+
+		System.out.println("Request - CLient");
+		peerFiles = hulk.requestFileList();
+
+		receiverSocket.close();
+
+		peerFileList = convertToList(peerFiles);
+		int peerFileLength = peerFileList.size();
+		myFilesList = getMyFiles();
+		missingFilesList = getMissingFiles(myFilesList, peerFileList);
+
+		while (true) {
+			if (!missingFilesList.isEmpty()) {
+				String fetchFile = missingFilesList.pop();
+
+				receiverSocket = new Socket(IP_ADDRESS, 6789);
+				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
+
+				hulk.requestFile(fetchFile);
+
+				receiverSocket.close();
+
+			} else {
+				receiverSocket = new Socket(IP_ADDRESS, 6789);
+				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
+
+				System.out.println("Ending");
+				hulk.terminateSync();
+				receiverSocket.close();
+				break;
+			}
+		}
 	}
 
-
-	static void send(boolean isSender) throws IOException {
-		System.out.println("Send - Hulk");
+	static void send() throws IOException {
+		System.out.println("Send - Server");
 		while (true) {
-			if (isSender == true) {
-				senderSocket = serverSocket.accept();
-				hulk = new Peer(SHARED_FILE_PATH, senderSocket);
-				System.out.println("Established connection");
+
+			senderSocket = serverSocket.accept();
+			hulk = new Peer(SHARED_FILE_PATH, senderSocket);
+			System.out.println("Established connection");
+
+			String input = hulk.getInputStream().readLine(); // getting stuck
+
+			System.out.println(input);// here again
+
+			if (input.charAt(0) == 'I') {
+				peerList.add(input.substring(1));
+			} else if (input.equals("L")) {
+				System.out.println(input);
+				hulk.sendFileList();
+				System.out.println("After L");
+			} else if (input.charAt(0) == 'F') {
+				String fileName = input.substring(1);
+				hulk.sendFile(fileName);
+			} else if (input.equals("D")) {
+				System.out.println("Terminated sync.");
+				break;
 			}
-			String input = hulk.getInputStream().readLine(); //getting stuck here again
-			System.out.println("input = " + input);
-			
-			System.out.print("Sending ??");
-			 if (input.equals("L")) {
-				 hulk.sendFileList();
-				 System.out.println("After L");
-			 } else if (input.charAt(0) == 'F') {
-				 String fileName = input.substring(1);
-				 hulk.sendFile(fileName);
-			 } else if (input.equals("D")) {
-				 System.out.println("Terminated sync.");
-				 break;
-			 }
 		}
 
 	}
 
-	
 	static List<String> convertToList(String filenames) {
 		List<String> list = new ArrayList<String>();
 		String fileNames[] = filenames.split(",");
