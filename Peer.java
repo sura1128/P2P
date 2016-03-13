@@ -96,7 +96,7 @@ class Peer {
 			e.printStackTrace();
 		}
 		try {
-			out = new FileOutputStream("\\" + fileName);
+			out = new FileOutputStream(SHARED_FILE_PATH + fileName);
 		} catch (FileNotFoundException ex) {
 			System.out.println("File not found. ");
 		}

@@ -18,7 +18,7 @@ public class Hulk {
 	static String IP_ADDRESS;
 	final static int port = 6789;
 	final static String SHARED_FILE_PATH = Hulk.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-			+ File.separator + "Hulk_Shared_Files" + File.separator;
+			+ "../src"+ File.separator + "Hulk_Shared_Files" + File.separator;
 
 	private static List<String> peerList = new ArrayList<String>();
 	private static Peer hulk;
@@ -147,6 +147,7 @@ public class Hulk {
 		peerFileList.removeAll(myFilesList);
 		Stack<String> missingFiles = new Stack<String>();
 		for (int i = 0; i < peerFileList.size(); i++) {
+			System.out.println(peerFileList.get(i));
 			missingFiles.push(peerFileList.get(i));
 		}
 		System.out.println("Missing files " + missingFiles.size());

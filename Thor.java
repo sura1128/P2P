@@ -17,8 +17,8 @@ public class Thor {
 	static boolean HAS_IP = false;
 	static String IP_ADDRESS;
 	final static int port = 6789;
-	final static String SHARED_FILE_PATH = Thor.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-			+ File.separator + "thor_Shared_Files" + File.separator;
+	final static String SHARED_FILE_PATH = Thor.class.getProtectionDomain().getCodeSource().getLocation().getPath() +
+			"../src"+ File.separator + "Thor_Shared_Files" + File.separator;
 
 	private static List<String> peerList = new ArrayList<String>();
 	private static Peer thor;
@@ -83,8 +83,6 @@ public class Thor {
 		 myFilesList = getMyFiles();
 		 missingFilesList = getMissingFiles(myFilesList, peerFileList);
 		 
-		 System.out.println(missingFilesList.size() + " " + peerFileLength);
-		 
 		 while(true) {
 			 if(!missingFilesList.isEmpty()){
 				 String fetchFile = missingFilesList.pop();
@@ -125,7 +123,9 @@ public class Thor {
 	static List<String> convertToList(String filenames) {
 		List<String> list = new ArrayList<String>();
 		String fileNames[] = filenames.split(",");
-		for (int i = 0; i < fileNames.length - 1; i++) {
+		System.out.println("Hulk files");
+		for (int i = 0; i < fileNames.length; i++) {
+			System.out.println(fileNames[i]);
 			list.add(fileNames[i]);
 		}
 		return list;
@@ -134,8 +134,10 @@ public class Thor {
 	static List<String> getMyFiles() {
 		List<String> allFilesList = new ArrayList<String>();
 		File dir = new File(SHARED_FILE_PATH);
+		System.out.println("Thor files " + SHARED_FILE_PATH);
 		if (dir.exists()) {
 			for (final File fileEntry : dir.listFiles()) {
+				System.out.println(fileEntry.getName());
 				allFilesList.add(fileEntry.getName());
 			}
 		}
@@ -146,6 +148,7 @@ public class Thor {
 		peerFileList.removeAll(myFilesList);
 		Stack<String> missingFiles = new Stack<String>();
 		for (int i = 0; i < peerFileList.size(); i++) {
+//			System.out.println(peerFileList.get(i));
 			missingFiles.push(peerFileList.get(i));
 		}
 		System.out.println("Missing files " + missingFiles.size());
