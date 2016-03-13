@@ -42,6 +42,11 @@ class Peer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		try {
+			outToClient.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -70,6 +75,11 @@ class Peer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		try {
+			outToClient.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	String requestFileList() {
@@ -84,6 +94,12 @@ class Peer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		try {
+			outToClient.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		return fileList;
 	}
 	
@@ -112,6 +128,11 @@ class Peer {
 			while ((count = in.read(bytes)) > 0) {
 			out.write(bytes, 0, count);
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			outToClient.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

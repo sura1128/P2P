@@ -82,11 +82,13 @@ public class Thor {
 		 int peerFileLength = peerFileList.size();
 		 myFilesList = getMyFiles();
 		 missingFilesList = getMissingFiles(myFilesList, peerFileList);
-		 
+		 System.out.println("Peer file length = " + peerFileLength );
+		 System.out.println("My file length = " + myFilesList.size() );
 		 while(true) {
 			 if(!missingFilesList.isEmpty()){
 				 String fetchFile = missingFilesList.pop();
 				 thor.requestFile(fetchFile);
+				 System.out.println("Thor while loop");
 				 if (peerFileLength == myFilesList.size()) {
 					 System.out.println("Ending sync");
 					 thor.terminateSync();

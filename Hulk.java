@@ -111,6 +111,7 @@ public class Hulk {
 			System.out.print("Sending ??");
 			 if (input.equals("L")) {
 				 hulk.sendFileList();
+				 System.out.println("After L");
 			 } else if (input.charAt(0) == 'F') {
 				 String fileName = input.substring(1);
 				 hulk.sendFile(fileName);
