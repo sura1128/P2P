@@ -1,5 +1,4 @@
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,11 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 
 public class Server {
 	static boolean HAS_IP = false;
@@ -81,7 +77,6 @@ public class Server {
 		receiverSocket.close();
 
 		peerFileList = convertToList(peerFiles);
-		int peerFileLength = peerFileList.size();
 		myFilesList = getMyFiles();
 		missingFilesList = getMissingFiles(myFilesList, peerFileList);
 
@@ -121,16 +116,17 @@ public class Server {
 			if (input.charAt(0) == 'I') {
 				peerList.add(input.substring(1));
 			} else if (input.equals("L")) {
-				System.out.println(input);
 				hulk.sendFileList();
+				senderSocket.close();
 			} else if (input.charAt(0) == 'F') {
 				String fileName = input.substring(1);
 				hulk.sendFile(fileName);
+				senderSocket.close();
 			} else if (input.equals("D")) {
 				System.out.println("Terminated sync.");
+				senderSocket.close();
 				break;
-			}
-			senderSocket.close();
+			}			
 		}
 
 	}

@@ -30,14 +30,13 @@ class Peer {
 	void sendIP() {
 		try {
 			outToClient.writeBytes("I" + InetAddress.getLocalHost().getHostAddress() + "\n");
-			System.out.println("Sending I");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	void sendFileList() {
-		System.out.println("Sending file list...");
+
 		File dir = new File(SHARED_FILE_PATH);
 		StringBuffer allFileNames = new StringBuffer();
 		if (dir.exists()) {
@@ -48,12 +47,8 @@ class Peer {
 		try {
 			outToClient.writeBytes(allFileNames.toString() + "\n");
 			System.out.println("Sent file names " + allFileNames);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
 			outToClient.flush();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -63,31 +58,17 @@ class Peer {
 		InputStream in = null;
 		OutputStream out = null;
 		File file = new File(SHARED_FILE_PATH + fileName);
-		System.out.println("Sending ..." + fileName);
 		// Get the size of the file
-		long length = file.length();
 		byte[] bytes = new byte[16 * 1024];
 		int count;
 		try {
 			in = new FileInputStream(file);
-		} catch (FileNotFoundException ex) {
-			System.out.println("File not found. ");
-		}
-		try {
 			out = mySocket.getOutputStream();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
 			while ((count = in.read(bytes)) > 0) {
 				out.write(bytes, 0, count);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
 			outToClient.flush();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -97,15 +78,7 @@ class Peer {
 
 		try {
 			outToClient.writeBytes("L\n"); // no problem?
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
 			fileList = inFromClient.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
 			outToClient.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -115,13 +88,11 @@ class Peer {
 	}
 
 	void requestFile(String fileName) {
-		System.out.println("Called by Thor????");
 		OutputStream out = null;
 		InputStream in = null;
 
 		try {
 			outToClient.writeBytes("F" + fileName + "\n");
-			System.out.println("Able to write " + fileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -132,24 +103,13 @@ class Peer {
 		}
 		try {
 			in = mySocket.getInputStream();
-			System.out.println("Able to read???" + in.read());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		byte[] bytes = new byte[100 * 1024];
-		int count;
-		try {
+			byte[] bytes = new byte[100 * 1024];
+			int count;
 			while ((count = in.read(bytes)) > 0) {
 				out.write(bytes, 0, count);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		try {
 			outToClient.flush();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
