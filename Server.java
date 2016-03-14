@@ -44,23 +44,25 @@ public class Server {
 		while (true) {
 			if (peerList.isEmpty()) {
 				System.out.println("I'm a server");
-				serverSocket = new ServerSocket(6789);
-				serverSocket.setSoTimeout(10000);
 				try {
+					serverSocket = new ServerSocket(6789);
+					serverSocket.setSoTimeout(10000);
 					send();
 					serverSocket.close();
+				} catch (java.net.BindException e) {
+//					e.printStackTrace();
+					System.out.println("port not available, will try again");
 				} catch (java.io.InterruptedIOException e) {
 					System.out.println(
 							"Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
 					peerList.add(peerName);
-
 				}
 			} else {
 				receiverSocket = new Socket(peerList.remove(0), 6789);
 				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
 				hulk.sendIP();
-				receiverSocket.close();				
+				receiverSocket.close();
 				receive();
 
 			}

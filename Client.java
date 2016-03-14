@@ -45,17 +45,19 @@ public class Client {
 		while (true) {
 			if (peerList.isEmpty()) {
 				System.out.println("I'm a server");
-				serverSocket = new ServerSocket(6789);
-				serverSocket.setSoTimeout(10000);
 				try {
+					serverSocket = new ServerSocket(6789);
+					serverSocket.setSoTimeout(10000);
 					send();
 					serverSocket.close();
+				} catch (java.net.BindException e) {
+//					e.printStackTrace();
+					System.out.println("port not available, will try again");
 				} catch (java.io.InterruptedIOException e) {
 					System.out.println(
 							"Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
 					peerList.add(peerName);
-
 				}
 			} else {
 				try {
@@ -160,7 +162,7 @@ public class Client {
 	}
 
 	static Stack<String> getMissingFiles(List<String> myFilesList, List<String> peerFileList) {
-		peerFileList.removeAll(myFilesList);		
+		peerFileList.removeAll(myFilesList);
 		Stack<String> missingFiles = new Stack<String>();
 		for (int i = 0; i < peerFileList.size(); i++) {
 			System.out.println(peerFileList.get(i));
