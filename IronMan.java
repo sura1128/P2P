@@ -5,35 +5,36 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Hulk {
+public class IronMan {
 	
-	private static String SHARED_FILE_PATH = Hulk.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-			+ "../src" + File.separator + "Hulk_Shared_Files" + File.separator;;
+	private static String SHARED_FILE_PATH = IronMan.class.getProtectionDomain().getCodeSource().getLocation().getPath()
+			+ "../src" + File.separator + "Ironman_Shared_Files" + File.separator;;
 	private static ServerSocket serverSocket;
 	private static Socket receiverSocket;
+
 
 	public static void main(String argv[]) throws Exception {
 
 		String peerName = "";
 
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-		Peer hulk = new Peer(SHARED_FILE_PATH, InetAddress.getLocalHost().getHostAddress(), "Hulk");
-		initializeClients(hulk);
+		Peer ironman = new Peer(SHARED_FILE_PATH, InetAddress.getLocalHost().getHostAddress(), "ironman");
+		initializeClients(ironman);
 		
 		System.out.println("Type 1 to transfer, type 2 to request.");
 		String choice = input.readLine();
 		if (choice.equals("2")){
-			hulk.getPeerList().add(InetAddress.getLocalHost().getHostAddress());
+			ironman.getPeerList().add(InetAddress.getLocalHost().getHostAddress());
 		}
 		
 		while (true) {
-			if (hulk.getPeerList().isEmpty()) {
-				System.out.println("Hulk will now send files.");
+			if (ironman.getPeerList().isEmpty()) {
+				System.out.println("Iron man will now send files.");
 				try {
 					serverSocket = new ServerSocket(6789);
 					serverSocket.setSoTimeout(10000);
-					hulk.setServerSocket(serverSocket);
-					hulk.send();
+					ironman.setServerSocket(serverSocket);
+					ironman.send();
 					serverSocket.close();
 				} catch (java.net.BindException e) {
 					System.out.println("The port is not available.");
@@ -42,27 +43,27 @@ public class Hulk {
 					System.out.println(
 							"Time Out 10 Sec. No Peer found, please enter the IP address of the peer you want to connect to. ");
 					peerName = input.readLine();
-					hulk.getPeerList().add(peerName);
+					ironman.getPeerList().add(peerName);
 				}
 			} else {
-				String IP = hulk.getPeerList().remove(0);
+				String IP = ironman.getPeerList().remove(0);
 				
 				receiverSocket = new Socket(IP, 6789);				
-				hulk.initializeStreams(receiverSocket);
-				hulk.handShake();
+				ironman.initializeStreams(receiverSocket);
+				ironman.handShake();
 				receiverSocket.close();
 				
 				receiverSocket = new Socket(IP, 6789);				
-				hulk.initializeStreams(receiverSocket);
-				String name = hulk.requestClientName();
-				hulk.sendClientName();
-				if (hulk.isSecureClient(name)) {
+				ironman.initializeStreams(receiverSocket);
+				String name = ironman.requestClientName();
+				ironman.sendClientName();
+				if (ironman.isSecureClient(name)) {
 					receiverSocket.close();					
 					receiverSocket = new Socket(IP, 6789);
-					hulk.initializeStreams(receiverSocket);
-					hulk.sendIP();
+					ironman.initializeStreams(receiverSocket);
+					ironman.sendIP();
 					receiverSocket.close();
-					hulk.receive();
+					ironman.receive();
 				} else {
 					receiverSocket.close();
 					System.out.println("Insecure Client Login. Abort file transfer.");
@@ -77,7 +78,7 @@ public class Hulk {
 	
 	static void initializeClients(Peer thor) {
 		thor.initializeClient("Thor");
-		thor.initializeClient("IronMan");
+		thor.initializeClient("Hulk");
 	}
 
 	

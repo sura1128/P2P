@@ -6,25 +6,29 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Thor {
-	
-	private String SHARED_FILE_PATH = Thor.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-			+ "../src" + File.separator + "Thor_Shared_Files" + File.separator;;
-	private ServerSocket serverSocket;
-	private Socket receiverSocket;
 
-	public void synchronize(String argv[]) throws Exception {
+	private static String SHARED_FILE_PATH = Thor.class.getProtectionDomain().getCodeSource().getLocation().getPath()
+			+ "../src" + File.separator + "Thor_Shared_Files" + File.separator;;
+	private static ServerSocket serverSocket;
+	private static Socket receiverSocket;
+
+	public static void main(String argv[]) throws Exception {
 
 		String peerName = "";
 
-		// IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
-
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-		Peer thor = new Peer(SHARED_FILE_PATH, InetAddress.getLocalHost().getHostAddress());
-		thor.getPeerList().add(InetAddress.getLocalHost().getHostAddress());
-		
+		Peer thor = new Peer(SHARED_FILE_PATH, InetAddress.getLocalHost().getHostAddress(), "Thor");
+		initializeClients(thor);
+
+		System.out.println("Type 1 to transfer, type 2 to request.");
+		String choice = input.readLine();
+		if (choice.equals("2")) {
+			thor.getPeerList().add(InetAddress.getLocalHost().getHostAddress());
+		}
+
 		while (true) {
 			if (thor.getPeerList().isEmpty()) {
-				System.out.println("I'm a server");
+				System.out.println("Thor will now send files.");
 				try {
 					serverSocket = new ServerSocket(6789);
 					serverSocket.setSoTimeout(10000);
@@ -41,11 +45,28 @@ public class Thor {
 				}
 			} else {
 				String IP = thor.getPeerList().remove(0);
+
 				receiverSocket = new Socket(IP, 6789);
 				thor.initializeStreams(receiverSocket);
-				thor.sendIP();
+				thor.handShake();
 				receiverSocket.close();
-				thor.receive();
+
+				receiverSocket = new Socket(IP, 6789);
+				thor.initializeStreams(receiverSocket);
+				String name = thor.requestClientName();
+				thor.sendClientName();
+				if (thor.isSecureClient(name)) {
+					receiverSocket.close();
+					receiverSocket = new Socket(IP, 6789);
+					thor.initializeStreams(receiverSocket);
+					thor.sendIP();
+					receiverSocket.close();
+					thor.receive();
+				} else {
+					receiverSocket.close();
+					System.out.println("Insecure Client Login. Abort file transfer.");
+					break;
+				}
 
 			}
 
@@ -53,5 +74,9 @@ public class Thor {
 
 	}
 
-	
+	static void initializeClients(Peer thor) {
+		thor.initializeClient("Hulk");
+		thor.initializeClient("IronMan");
+	}
+
 }

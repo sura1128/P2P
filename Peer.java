@@ -16,18 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-
-
 public class Peer {
-	
+
 	private String SHARED_FILE_PATH;
 	private String IP_ADDRESS;
+	private String PEER_NAME;
 
 	private String peerFiles = null;
 	private static List<String> peerList = new ArrayList<String>();
 	private Stack<String> missingFilesList = new Stack<String>();
 	private List<String> myFilesList = new ArrayList<String>();
 	private List<String> peerFileList = new ArrayList<String>();
+	private static List<String> PEERNAMES = new ArrayList<String>();
 
 	private Socket receiverSocket;
 	private Socket senderSocket;
@@ -36,24 +36,55 @@ public class Peer {
 	private Socket mySocket;
 	private BufferedReader inFromClient;
 	private DataOutputStream outToClient;
-	
-	Peer(String SHARED_FILE_PATH, String IP_ADDRESS) {
+
+	Peer(String SHARED_FILE_PATH, String IP_ADDRESS, String PEER_NAME) {
 		this.SHARED_FILE_PATH = SHARED_FILE_PATH;
 		this.IP_ADDRESS = IP_ADDRESS;
+		this.PEER_NAME = PEER_NAME;
 	}
-	
+
 	void initializeStreams(Socket incomingSocket) throws IOException {
-		this.mySocket = incomingSocket;		
+		this.mySocket = incomingSocket;
 		inFromClient = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
 		outToClient = new DataOutputStream(mySocket.getOutputStream());
 	}
-	
+
 	List<String> getPeerList() {
 		return peerList;
 	}
-	
+
 	void setServerSocket(ServerSocket serverSocket) {
 		this.serverSocket = serverSocket;
+	}
+
+	void handShake() {
+		try {
+			outToClient.writeBytes("Hello\n");
+			outToClient.flush();
+		} catch (Exception e) {			
+			System.out.println("Handled Socket Writing errors in Handshake.");
+		}
+	}
+	
+	String requestClientName() {
+		String name="";
+		try {
+			outToClient.writeBytes("NAME\n");
+			name = inFromClient.readLine();
+			outToClient.flush();
+		} catch (IOException e) {
+			System.out.println("Handled Socket Writing errors in Client name Request.");
+		}
+		return name;
+		
+	}
+	
+	void sendClientName() {
+		try {
+			outToClient.writeBytes(PEER_NAME+"\n");
+		} catch (IOException e) {
+			System.out.println("Handled Socket Writing errors in Sending client name.");
+		}
 	}
 
 	void sendIP() {
@@ -106,7 +137,7 @@ public class Peer {
 		String fileList = "";
 
 		try {
-			outToClient.writeBytes("L\n"); // no problem?
+			outToClient.writeBytes("REQLIST\n");
 			fileList = inFromClient.readLine();
 			outToClient.flush();
 		} catch (IOException e) {
@@ -146,17 +177,17 @@ public class Peer {
 
 	void terminateSync() {
 		try {
-			outToClient.writeBytes("D\n");
+			outToClient.writeBytes("END\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	void receive() throws UnknownHostException, IOException {
+
 		receiverSocket = new Socket(IP_ADDRESS, 6789);
 		initializeStreams(receiverSocket);
 
-		System.out.println("Request - CLient");
 		peerFiles = requestFileList();
 
 		receiverSocket.close();
@@ -187,7 +218,6 @@ public class Peer {
 	}
 
 	void send() throws IOException {
-		System.out.println("Send - Server");
 		while (true) {
 
 			senderSocket = serverSocket.accept();
@@ -198,22 +228,44 @@ public class Peer {
 
 			System.out.println(input);// here again
 
-			if (input.charAt(0) == 'I') {
+			if (input.equals("Hello")) {
+				handShake();
+			} else if (input.equals("NAME")) {
+				sendClientName();
+				String name = requestClientName();
+				if (!isSecureClient(name)) {
+					senderSocket.close();
+					System.out.println("Insecure client connection. Abort file transfer.");
+					break;
+				}
+				senderSocket.close();
+			}
+			else if (input.charAt(0) == 'I') {
 				peerList.add(input.substring(1));
-			} else if (input.equals("L")) {
+			} else if (input.equals("REQLIST")) {
 				sendFileList();
 				senderSocket.close();
 			} else if (input.charAt(0) == 'F') {
 				String fileName = input.substring(1);
 				sendFile(fileName);
 				senderSocket.close();
-			} else if (input.equals("D")) {
+			} else if (input.equals("END")) {
 				System.out.println("Terminated sync.");
 				senderSocket.close();
 				break;
 			}
 		}
 
+	}
+	
+	void initializeClient(String name) {
+		PEERNAMES.add(name);
+	}
+	boolean isSecureClient(String name) {
+		System.out.println(name);
+		if (PEERNAMES.contains(name)){
+			return true;
+		} else return false;
 	}
 
 	List<String> convertToList(String filenames) {
