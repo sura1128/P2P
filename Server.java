@@ -35,7 +35,6 @@ public class Server {
 	public static void main(String argv[]) throws Exception {
 
 		String peerName = "";
-		boolean isSender = false;
 
 		// IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
 
@@ -48,7 +47,6 @@ public class Server {
 				serverSocket = new ServerSocket(6789);
 				serverSocket.setSoTimeout(10000);
 				try {
-					isSender = true;
 					send();
 					serverSocket.close();
 				} catch (java.io.InterruptedIOException e) {
@@ -62,8 +60,7 @@ public class Server {
 				receiverSocket = new Socket(peerList.remove(0), 6789);
 				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
 				hulk.sendIP();
-				receiverSocket.close();
-				
+				receiverSocket.close();				
 				receive();
 
 			}
@@ -100,8 +97,6 @@ public class Server {
 			} else {
 				receiverSocket = new Socket(IP_ADDRESS, 6789);
 				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
-
-				System.out.println("Ending");
 				hulk.terminateSync();
 				receiverSocket.close();
 				break;
@@ -126,7 +121,6 @@ public class Server {
 			} else if (input.equals("L")) {
 				System.out.println(input);
 				hulk.sendFileList();
-				System.out.println("After L");
 			} else if (input.charAt(0) == 'F') {
 				String fileName = input.substring(1);
 				hulk.sendFile(fileName);
@@ -134,6 +128,7 @@ public class Server {
 				System.out.println("Terminated sync.");
 				break;
 			}
+			senderSocket.close();
 		}
 
 	}
@@ -141,7 +136,7 @@ public class Server {
 	static List<String> convertToList(String filenames) {
 		List<String> list = new ArrayList<String>();
 		String fileNames[] = filenames.split(",");
-		for (int i = 0; i < fileNames.length - 1; i++) {
+		for (int i = 0; i < fileNames.length; i++) {
 			list.add(fileNames[i]);
 		}
 		return list;
@@ -165,7 +160,6 @@ public class Server {
 			System.out.println(peerFileList.get(i));
 			missingFiles.push(peerFileList.get(i));
 		}
-		System.out.println("Missing files " + missingFiles.size());
 		return missingFiles;
 	}
 

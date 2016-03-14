@@ -35,7 +35,6 @@ public class Client {
 	public static void main(String argv[]) throws Exception {
 
 		String peerName = "";
-		boolean isSender = false;
 
 		// IP_ADDRESS = InetAddress.getLocalHost().getHostAddress();
 
@@ -64,7 +63,6 @@ public class Client {
 					hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
 					hulk.sendIP();
 					receiverSocket.close();
-
 					receive();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -104,8 +102,6 @@ public class Client {
 			} else {
 				receiverSocket = new Socket(IP_ADDRESS, 6789);
 				hulk = new Peer(SHARED_FILE_PATH, receiverSocket);
-
-				System.out.println("Ending");
 				hulk.terminateSync();
 				receiverSocket.close();
 				break;
@@ -132,7 +128,6 @@ public class Client {
 			} else if (input.equals("L")) {
 				System.out.println(input);
 				hulk.sendFileList();
-				System.out.println("After L");
 			} else if (input.charAt(0) == 'F') {
 				String fileName = input.substring(1);
 				hulk.sendFile(fileName);
@@ -147,7 +142,7 @@ public class Client {
 	static List<String> convertToList(String filenames) {
 		List<String> list = new ArrayList<String>();
 		String fileNames[] = filenames.split(",");
-		for (int i = 0; i < fileNames.length - 1; i++) {
+		for (int i = 0; i < fileNames.length; i++) {
 			list.add(fileNames[i]);
 		}
 		return list;
@@ -165,13 +160,12 @@ public class Client {
 	}
 
 	static Stack<String> getMissingFiles(List<String> myFilesList, List<String> peerFileList) {
-		peerFileList.removeAll(myFilesList);
+		peerFileList.removeAll(myFilesList);		
 		Stack<String> missingFiles = new Stack<String>();
 		for (int i = 0; i < peerFileList.size(); i++) {
 			System.out.println(peerFileList.get(i));
 			missingFiles.push(peerFileList.get(i));
 		}
-		System.out.println("Missing files " + missingFiles.size());
 		return missingFiles;
 	}
 
